@@ -1,7 +1,6 @@
 #include <raylib.h>
 
 #define CELL_WIDTH 5
-#define CELL_LENGTH 10
 #define SCREEN_WIDTH 810
 #define SCREEN_HEIGHT 810
 
@@ -26,7 +25,7 @@ int calculate_state(int a, int b, int c) {
     if (a == 0 && b == 0 && c == 0) return 0;
     return 0;
 }
-void drawCells(int y) {
+void draw_cells(int y) {
 
     int x = 0;
     for (int i = 0; i < TOTAL_CELLS; i++) {
@@ -42,10 +41,13 @@ void drawCells(int y) {
         /* DrawRectangleLines(i * CELL_WIDTH, y, CELL_WIDTH, CELL_WIDTH, DARKGRAY); */
     }
 }
-void updateCells(void) {
 
-    nextCells[0] = cells[0];
-    nextCells[TOTAL_CELLS - 1] = cells[TOTAL_CELLS - 1];
+// Update state for all cells
+void update_cells(void) {
+    // Wraparound
+    nextCells[0] = calculate_state(cells[TOTAL_CELLS -1], cells[0], cells[1]);
+    nextCells[TOTAL_CELLS - 1] = calculate_state(cells[TOTAL_CELLS -2], cells[TOTAL_CELLS -1], cells[0]);
+
     for (int i = 1; i < TOTAL_CELLS - 1; i++) {
         int left = cells[i - 1];
         int right = cells[i + 1];
@@ -66,8 +68,8 @@ int main(void) {
     {
         /* ClearBackground(RAYWHITE); */
         BeginDrawing();
-            drawCells(y);
-            updateCells();
+            draw_cells(y);
+            update_cells();
             // Move down 1 row
             y += CELL_WIDTH;
         EndDrawing();

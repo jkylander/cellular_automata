@@ -4,11 +4,11 @@
 #include <string.h>
 
 #define CELL_WIDTH 4
-#define SCREEN_WIDTH 810
+#define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 810
 
 #define TOTAL_CELLS SCREEN_WIDTH / CELL_WIDTH
-const uint8_t rule_value = 110;
+const uint8_t rule_value = 60;
 
 int cells[TOTAL_CELLS];
 int nextCells[TOTAL_CELLS];
@@ -22,10 +22,8 @@ void setup(void) {
 
 // Update cell state
 int calculate_state(int a, int b, int c) {
-    char* rule_str = int_to_binStr(rule_value);
-    char s[4] = {a + '0', b + '0', c + '0', '\0'};
-    int index = binStr_to_int(s);
-    return rule_str[7 - index] - '0';
+    int index = (a << 2) + (b << 1) + c;
+    return (rule_value >> index) & 1;
 }
 
 // Draw one row of cells
@@ -62,26 +60,6 @@ void update_cells(void) {
     }
 }
 
-// Convert int to string
-char *int_to_binStr(uint8_t num) {
-    static char binStr[9];
-    snprintf(binStr, sizeof(binStr), "%08b", num);
-    return binStr;
-}
-// Convert string to int
-int binStr_to_int(const char* str) {
-    int len = strlen(str);
-    int result = 0;
-
-    for (int i = 0; i < len; i++) {
-        if (str[len - 1 - i] != '0' && str[len - 1 - i] != '1') {
-            return -1; // Invalid binary number
-        }
-
-        result += (str[len - 1 - i] - '0') * (1 << i);
-    }
-    return result;
-}
 void render_ca(void) {
     // Window loop
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Elementary Cellular Automata");

@@ -9,7 +9,7 @@ SRC_DIRS ?= ./src
 SRCS := $(shell find $(SRC_DIRS) -name *.c)
 OBJS := $(addsuffix .o, $(basename $(SRCS)))
 DEPS := $(OBJS:.o=.d)
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -std=c99
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
@@ -18,7 +18,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 LDLIBS=-lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDLIBS)
+	$(CC) $(OBJS) -o $@ $(LDLIBS) $(CFLAGS)
 .PHONY: clean
 clean:
 	$(RM) $(TARGET) $(OBJS) $(DEPS)

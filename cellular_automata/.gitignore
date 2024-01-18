@@ -4,3 +4,4 @@
 tmp/
 src/
 a.out
+.clang-format

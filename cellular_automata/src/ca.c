@@ -2,21 +2,27 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define CELL_WIDTH 4
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 810
-
+#define MAX_INPUT_CHARS 3
 #define TOTAL_CELLS SCREEN_WIDTH / CELL_WIDTH
-const uint8_t rule_value = 60;
+
+// Differnt views
+typedef enum Screen { LOGO = 0, TITLE, RENDER } Screen;
+
+uint8_t rule_value = 60;
 
 int cells[TOTAL_CELLS];
 int nextCells[TOTAL_CELLS];
-char* int_to_binStr(uint8_t);
-int binStr_to_int(const char*);
 
 // Set only the middle cell to 1
 void setup(void) {
+    for (int i = 0; i < TOTAL_CELLS - 1; i++ ) {
+        cells[i] = 0;
+    }
     cells[ TOTAL_CELLS / 2 ] = 1;
 }
 
@@ -60,24 +66,125 @@ void update_cells(void) {
     }
 }
 
-void render_ca(void) {
-    // Window loop
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Elementary Cellular Automata");
-    int y = 0;
-    setup();
-    while(!WindowShouldClose())
-    {
-        /* ClearBackground(RAYWHITE); */
-        BeginDrawing();
-            draw_cells(y);
-            update_cells();
-            // Move down 1 row
-            y += CELL_WIDTH;
-        EndDrawing();
-    }
-}
 int main(void) {
 
-    render_ca();
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Elementary Cellular Automata");
+    Screen currentScreen = LOGO;
+
+    // Initalize vars
+    int y = 0;
+
+    char rule[MAX_INPUT_CHARS + 1] = {'\0'};
+    int letterCount = 0;
+    Rectangle textBox = {SCREEN_WIDTH /2.0f - 100, 180, 225, 50};
+    bool mouseOnText = false;
+
+    int framesCounter = 0;
+    SetTargetFPS(120);
+
+    // Main loop
+    while(!WindowShouldClose())
+    {
+        switch (currentScreen) {
+            case LOGO: {
+                framesCounter++;
+                if (framesCounter > 120) {
+                    framesCounter = 0;
+                    currentScreen = TITLE;
+                }
+            } break;
+
+            case TITLE: {
+
+                // Input box
+                if (CheckCollisionPointRec(GetMousePosition(), textBox)) mouseOnText = true;
+                else mouseOnText = false;
+                if (mouseOnText) {
+                    SetMouseCursor(MOUSE_CURSOR_IBEAM);
+                    int key = GetCharPressed();
+                    while (key > 0) {
+                        // NOTE: Only allow digits
+                        if ((key >= '0') && (key <= '9') && (letterCount < MAX_INPUT_CHARS)) {
+                            rule[letterCount] = (char)key;
+                            rule[letterCount+1] = '\0'; // add null terminator to end of string
+                            letterCount++;
+                        }
+                        key = GetCharPressed(); // check next char
+                    }
+
+                    if (IsKeyPressed(KEY_BACKSPACE)) {
+                        letterCount--;
+                        if (letterCount < 0) letterCount = 0;
+                        rule[letterCount] = '\0';
+                    }
+                }
+                else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+                if (mouseOnText) framesCounter++;
+                else framesCounter = 0;
+                rule_value = atoi(rule);
+                // Next case
+                if (IsKeyPressed(KEY_ENTER)) {
+                    SetTargetFPS(1000);
+                    currentScreen = RENDER;
+                }
+            } break;
+
+            case RENDER: {
+                if (IsKeyPressed(KEY_ENTER)) {
+                    SetTargetFPS(120);
+                    rule[0] = '\0';
+                    letterCount = 0;
+                    currentScreen = TITLE;
+                }
+            } break;
+
+            default: break;
+        }
+
+        BeginDrawing();
+            /* ClearBackground(RAYWHITE); */
+            switch(currentScreen) {
+                case LOGO: {
+                    ClearBackground(RAYWHITE);
+                    DrawText("LOGO", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 40, LIGHTGRAY);
+                } break;
+                case TITLE: {
+                    y = 0;
+                    setup();
+                    ClearBackground(RAYWHITE);
+                    char *title = "Elementary Cellular Automata";
+                    char *description = "Press Enter to start";
+
+                    DrawText(title, MeasureText(title, 40) / 2, SCREEN_HEIGHT / 4 - 100, 40, DARKGREEN);
+                    DrawText(description, MeasureText(description, 30) / 2 ,SCREEN_HEIGHT / 4 +100, 30, DARKGREEN);
+                    DrawRectangleRec(textBox, LIGHTGRAY);
+
+                    if (mouseOnText) DrawRectangleLines(textBox.x, textBox.y, textBox.width, textBox.height, RED);
+                    else DrawRectangleLines(textBox.x, textBox.y, textBox.width, textBox.height, DARKGRAY);
+                    DrawText(rule, textBox.x +5, textBox.y + 8, 40, MAROON);
+                    char *enter = "Enter a number between 0-255:";
+                    DrawText(TextFormat(enter), MeasureText(enter, 20) / 2 , 250, 20, DARKGRAY);
+                    if (mouseOnText) {
+                        if (letterCount < MAX_INPUT_CHARS) {
+                            // Draw blinking underscore
+                            if (((framesCounter/20)%2) == 0) DrawText("_", (int)textBox.x + 8 + MeasureText(rule, 40), (int)textBox.y + 12, 40, MAROON);
+                        }
+                        else DrawText("PRESS BACKSPACE to delete chars..", 200, 300, 20, GRAY);
+                    }
+                } break;
+                case RENDER: {
+                    draw_cells(y);
+                    update_cells();
+                    // Move down 1 row
+                    y += CELL_WIDTH;
+                } break;
+                default: break;
+            }
+        EndDrawing();
+    }
+
+    // De-Initialization
+    CloseWindow();
+
     return 0;
 }

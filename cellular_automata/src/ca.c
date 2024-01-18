@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CELL_WIDTH 4
+#define CELL_WIDTH 2
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 810
 #define MAX_INPUT_CHARS 3
@@ -40,8 +40,12 @@ void draw_cells(int y) {
         x = i * CELL_WIDTH;
         // Draw cells, 1 is black, 0 is white
         DrawRectangle(x, y, CELL_WIDTH, CELL_WIDTH,
-                      (Color){255 - 255 * cells[i], 255 - 255 * cells[i],
-                              255 - 255 * cells[i], 255});
+                      (Color) {
+                          255 - 255 * cells[i],
+                          255 - 255 * cells[i],
+                          255 - 255 * cells[i],
+                          255
+                      });
     }
 }
 
@@ -51,7 +55,7 @@ void update_cells(void) {
     nextCells[0] = calculate_state(cells[TOTAL_CELLS - 1], cells[0], cells[1]);
     nextCells[TOTAL_CELLS - 1] = calculate_state(
         cells[TOTAL_CELLS - 2], cells[TOTAL_CELLS - 1], cells[0]);
-
+    // Calculate neighbors
     for (int i = 1; i < TOTAL_CELLS - 1; i++) {
         int left = cells[i - 1];
         int right = cells[i + 1];
@@ -59,6 +63,7 @@ void update_cells(void) {
         int newState = calculate_state(left, state, right);
         nextCells[i] = newState;
     }
+    // Apply to current cells
     for (int i = 0; i < TOTAL_CELLS; i++) {
         cells[i] = nextCells[i];
     }
@@ -71,12 +76,10 @@ int main(void) {
     Texture2D title_image = LoadTexture("cellular_automata_paths.png");
     // Initalize vars
     int y = 0;
-
     char rule[MAX_INPUT_CHARS + 1] = {'\0'};
     int letterCount = 0;
     Rectangle textBox = {SCREEN_WIDTH / 2.0f - 100, 180, 225, 50};
     bool mouseOnText = false;
-
     int framesCounter = 0;
     SetTargetFPS(120);
 
@@ -100,8 +103,7 @@ int main(void) {
                 if ((key >= '0') && (key <= '9') &&
                     (letterCount < MAX_INPUT_CHARS)) {
                     rule[letterCount] = (char)key;
-                    rule[letterCount + 1] =
-                        '\0'; // add null terminator to end of string
+                    rule[letterCount + 1] = '\0';
                     letterCount++;
                 }
                 key = GetCharPressed(); // check next char
@@ -167,7 +169,7 @@ int main(void) {
 
             DrawText(rule, textBox.x + 5, textBox.y + 8, 40, MAROON);
             char *enter = "Enter a number between 0-255:";
-            DrawText(TextFormat(enter), MeasureText(enter, 20) / 2, 225, 20,
+            DrawText(TextFormat(enter), MeasureText(enter, 20) / 2, 200, 20,
                      DARKGRAY);
             if (letterCount < MAX_INPUT_CHARS) {
                 // Draw blinking underscore
@@ -189,6 +191,7 @@ int main(void) {
     }
 
     // De-Initialization
+    UnloadTexture(title_image);
     CloseWindow();
 
     return 0;

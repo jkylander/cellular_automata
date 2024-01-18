@@ -9,6 +9,7 @@
 #define SCREEN_HEIGHT 810
 #define MAX_INPUT_CHARS 3
 #define TOTAL_CELLS SCREEN_WIDTH / CELL_WIDTH
+#define MIDDLE(a, b) (a / 2.0f - b / 2.0f)
 
 // Differnt views
 typedef enum Screen { LOGO = 0, TITLE, RENDER } Screen;
@@ -70,7 +71,7 @@ int main(void) {
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Elementary Cellular Automata");
     Screen currentScreen = LOGO;
-
+    Texture2D title_image = LoadTexture("cellular_automata_paths.png");
     // Initalize vars
     int y = 0;
 
@@ -88,7 +89,7 @@ int main(void) {
         switch (currentScreen) {
             case LOGO: {
                 framesCounter++;
-                if (framesCounter > 120) {
+                if (framesCounter > 240) {
                     framesCounter = 0;
                     currentScreen = TITLE;
                 }
@@ -146,7 +147,7 @@ int main(void) {
             switch(currentScreen) {
                 case LOGO: {
                     ClearBackground(RAYWHITE);
-                    DrawText("LOGO", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 40, LIGHTGRAY);
+                    DrawTexture(title_image, MIDDLE(SCREEN_WIDTH, title_image.width), MIDDLE(SCREEN_HEIGHT, title_image.height), WHITE);
                 } break;
                 case TITLE: {
                     y = 0;
@@ -155,15 +156,21 @@ int main(void) {
                     char *title = "Elementary Cellular Automata";
                     char *description = "Press Enter to start";
 
-                    DrawText(title, MeasureText(title, 40) / 2, SCREEN_HEIGHT / 4 - 100, 40, DARKGREEN);
-                    DrawText(description, MeasureText(description, 30) / 2 ,SCREEN_HEIGHT / 4 +100, 30, DARKGREEN);
+                /* RLAPI Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);    // Measure string size for Font */
+                    DrawText(title, MIDDLE(SCREEN_WIDTH,MeasureText(title, 40)), SCREEN_HEIGHT / 4.0f - 100, 40, DARKGREEN);
+                    DrawText(description, MIDDLE(SCREEN_WIDTH, MeasureText(description, 30)),SCREEN_HEIGHT / 4 +100, 30, DARKGREEN);
                     DrawRectangleRec(textBox, LIGHTGRAY);
 
                     if (mouseOnText) DrawRectangleLines(textBox.x, textBox.y, textBox.width, textBox.height, RED);
                     else DrawRectangleLines(textBox.x, textBox.y, textBox.width, textBox.height, DARKGRAY);
                     DrawText(rule, textBox.x +5, textBox.y + 8, 40, MAROON);
                     char *enter = "Enter a number between 0-255:";
-                    DrawText(TextFormat(enter), MeasureText(enter, 20) / 2 , 250, 20, DARKGRAY);
+                    DrawText(TextFormat(enter),
+                             MeasureText(enter, 20) / 2,
+                             225,
+                             20,
+                             DARKGRAY
+                            );
                     if (mouseOnText) {
                         if (letterCount < MAX_INPUT_CHARS) {
                             // Draw blinking underscore

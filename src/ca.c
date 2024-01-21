@@ -79,7 +79,6 @@ int main(void) {
     char rule[MAX_INPUT_CHARS + 1] = {'\0'};
     int letterCount = 0;
     Rectangle textBox = {SCREEN_WIDTH / 2.0f - 100, 180, 225, 50};
-    bool mouseOnText = false;
     int framesCounter = 0;
     SetTargetFPS(120);
 

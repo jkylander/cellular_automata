@@ -3,22 +3,27 @@
 #
 # @file
 # @version 0.1
-CC= clang
-TARGET ?= a.out
+CC= cc 
+CFLAGS=-Wall -Wextra -std=c99
+EXE = .exe
+TARGET ?= cell$(EXE)
 SRC_DIRS ?= ./src
 SRCS := $(shell find $(SRC_DIRS) -name *.c)
 OBJS := $(addsuffix .o, $(basename $(SRCS)))
 DEPS := $(OBJS:.o=.d)
-CFLAGS=-Wall -Wextra -std=c99
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 #CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 
-LDLIBS=-lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+LDLIBS=-lraylib -lgdi32 -lwinmm
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDLIBS) $(CFLAGS)
+	$(CC) $(OBJS) -o $@  $(LDLIBS) $(CFLAGS) 
+
+.PHONE: run
+run:
+	$(TARGET)
 .PHONY: clean
 clean:
 	$(RM) $(TARGET) $(OBJS) $(DEPS)

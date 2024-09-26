@@ -1,8 +1,6 @@
-#include <raylib.h>
+#include "raylib.h"
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define CELL_WIDTH 2
 #define SCREEN_WIDTH 1200
@@ -12,7 +10,7 @@
 #define MIDDLE(a, b) (a / 2.0f - b / 2.0f)
 
 // Differnt views
-typedef enum Screen { LOGO = 0, TITLE, RENDER } Screen;
+typedef enum Screen { LOGO, TITLE, RENDER } Screen;
 
 uint8_t rule_value = 60;
 
@@ -82,13 +80,18 @@ int main(void) {
     int framesCounter = 0;
     SetTargetFPS(120);
 
+    RenderTexture2D canvas = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
+    BeginTextureMode(canvas);
+    ClearBackground(RAYWHITE);
+    EndTextureMode();
+
     // Main loop
     while (!WindowShouldClose()) {
         switch (currentScreen) {
 
         case LOGO: {
             framesCounter++;
-            if (framesCounter > 240) {
+            if (framesCounter > 120) {
                 framesCounter = 0;
                 currentScreen = TITLE;
             }
@@ -137,7 +140,7 @@ int main(void) {
             break;
         }
 
-        BeginDrawing();
+        BeginTextureMode(canvas);
         switch (currentScreen) {
         case LOGO: {
             ClearBackground(RAYWHITE);
@@ -146,9 +149,9 @@ int main(void) {
         } break;
 
         case TITLE: {
+            ClearBackground(RAYWHITE);
             y = 0;
             setup();
-            ClearBackground(RAYWHITE);
             char *title = "Elementary Cellular Automata";
             char *description = "Press Enter to start";
 
@@ -178,14 +181,20 @@ int main(void) {
             }
         } break;
         case RENDER: {
+            if (y == 0) ClearBackground(RAYWHITE);
             draw_cells(y);
             update_cells();
             // Move down 1 row
             y += CELL_WIDTH;
         } break;
-        default:
-            break;
+        default: break;
         }
+
+        EndTextureMode();
+
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawTextureRec(canvas.texture, (Rectangle) {0, 0, (float)canvas.texture.width, (float)-canvas.texture.height}, (Vector2){0, 0}, WHITE);
         EndDrawing();
     }
 

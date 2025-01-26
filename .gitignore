@@ -6,3 +6,4 @@ src/*.o
 a.out
 .clang-format
 *.png
+build
